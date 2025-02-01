@@ -10,10 +10,11 @@ from poetry2rye.utils import get_biggest_backup_num
 
 
 def handle_mig(args: Any) -> None:
-    path = args.path
+    path: Path = args.path
     project_path = Path(path).absolute()
+    ensure_src: bool = not args.ignore_src
 
-    convert(project_path)
+    convert(project_path=project_path, ensure_src=ensure_src)
 
     print("done")
 
@@ -61,6 +62,13 @@ def main(args: Optional[list[str]] = None):
     mig_parser.add_argument("path")
     mig_parser.set_defaults(func=handle_mig)
 
+    mig_parser.add_argument(
+        "--ignore-src",
+        help='use it to ignore the checking/creating "src/" directory during migration process (by default will check and create).',
+        action="store_true",
+        default=False,
+    )
+
     get_backup_parser = subparsers.add_parser(
         "get-backup", help="get a backup of a Poetry project"
     )
@@ -82,6 +90,7 @@ def main(args: Optional[list[str]] = None):
     get_backup_parser.set_defaults(func=handle_get_backup)
 
     args = parser.parse_args(args)
+    print(args)
     if not hasattr(args, "func"):
         parser.print_help()
         exit(1)
